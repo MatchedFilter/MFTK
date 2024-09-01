@@ -96,7 +96,7 @@ void Window::GridWidget(Widget *widget, GridData gridData)
         Sint32 columnWidth = m_ColumnMap[gridData.column];
         if (columnWidth < widget->m_Position.w)
         {
-            m_RowMap[gridData.column] = widget->m_Position.w;
+            m_ColumnMap[gridData.column] = widget->m_Position.w;
         }
     }
     else
