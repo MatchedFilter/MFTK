@@ -1,9 +1,9 @@
 #pragma once
 #include "MFTK/Tk.h"
-#include "MFTK/Widget/WidgetEventHandler/IWidgetEnterEventHandler.h"
+#include "MFTK/Widget/WidgetEventHandler/IWidgetMouseEnterEventHandler.h"
 #include <iostream>
 
-class OnMouseEnterEventHandler : public MFTK::IWidgetEnterEventHandler
+class OnMouseEnterEventHandler : public MFTK::IWidgetMouseEnterEventHandler
 {
 public:
     OnMouseEnterEventHandler() = default;

@@ -4,10 +4,10 @@
 namespace MFTK
 {
     class Widget;
-    class IWidgetEnterEventHandler
+    class IWidgetMouseEnterEventHandler
     {
     public:
-        virtual ~IWidgetEnterEventHandler() = default;
+        virtual ~IWidgetMouseEnterEventHandler() = default;
         virtual void OnEnter(Widget *widget, const SDL_Event *event) = 0;
     };
 }

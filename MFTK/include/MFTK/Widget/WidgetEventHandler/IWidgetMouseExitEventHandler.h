@@ -4,10 +4,10 @@
 namespace MFTK
 {
     class Widget;
-    class IWidgetExitEventHandler
+    class IWidgetMouseExitEventHandler
     {
     public:
-        virtual ~IWidgetExitEventHandler() = default;
+        virtual ~IWidgetMouseExitEventHandler() = default;
         virtual void OnExit(Widget *widget, const SDL_Event *event) = 0;
     };
 }

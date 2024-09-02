@@ -18,17 +18,49 @@ inline bool IsInVerticalRange(const SDL_Event *event, const SDL_Rect &position)
         (event->motion.y < position.y + position.h);
 }
 
+static constexpr Uint8 BUTTON_LEFT = 0;
+static constexpr Uint8 BUTTON_MIDDLE = 1;
+static constexpr Uint8 BUTTON_RIGHT = 2;
+inline Uint8 GetButtonCode(const SDL_Event* event)
+{
+    Uint8 buttonCode = BUTTON_LEFT;
+    switch (event->button.button)
+    {
+    case SDL_BUTTON_LEFT:
+        buttonCode = BUTTON_LEFT;
+        break;
+    case SDL_BUTTON_RIGHT:
+        buttonCode = BUTTON_RIGHT;
+        break;
+    case SDL_BUTTON_MIDDLE:
+        buttonCode = BUTTON_MIDDLE;
+        break;
+    
+    default:
+        break;
+    }
+    return buttonCode;
+}
+
 
 Widget::Widget(Window *window, Sint32 w, Sint32 h) :
     m_Window { window },
     m_Position { .x = 0, .y = 0, .w = w, .h = h },
     m_bIsHover { false },
+    m_bIsFocused { false },
     m_MousePressedState { SDL_MOUSEBUTTONUP },
     m_WidgetClickedEventHandler { nullptr },
     m_WidgetHoverEventHandler { nullptr },
-    m_WidgetEnterEventHandler { nullptr },
-    m_WidgetExitEventHandler { nullptr },
-    m_BgColor { .r = 100, .g = 100, .b = 100, .a = 255 },
+    m_WidgetMouseEnterEventHandler { nullptr },
+    m_WidgetMouseExitEventHandler { nullptr },
+    m_WidgetKeyPressedEventHandler { nullptr },
+    m_WidgetKeyReleasedEventHandler { nullptr },
+    m_WidgetMouseButtonPressedEventHandler { nullptr },
+    m_WidgetMouseButtonReleasedEventHandler { nullptr },
+    m_BgColor { .r = 40, .g = 40, .b = 40, .a = 255 },
+    m_BorderColor { .r = 160, .g = 160, .b = 180, .a = 255 },
+    m_PadX { 1 },
+    m_PadY { 1 },
     m_ID { 0 }
 {
     m_ID = Tk::GenerateWidgetID();
@@ -47,9 +79,9 @@ void Widget::HandleEvents(const SDL_Event *event)
     {
         if (m_bIsHover == false)
         {
-            if (m_WidgetEnterEventHandler != nullptr)
+            if (m_WidgetMouseEnterEventHandler != nullptr)
             {
-                m_WidgetEnterEventHandler->OnEnter(this, event);
+                m_WidgetMouseEnterEventHandler->OnEnter(this, event);
             }
         }
         if (m_WidgetHoverEventHandler != nullptr)
@@ -62,32 +94,88 @@ void Widget::HandleEvents(const SDL_Event *event)
     {
         if (m_bIsHover == true)
         {
-            if (m_WidgetExitEventHandler != nullptr)
+            if (m_WidgetMouseExitEventHandler != nullptr)
             {
-                m_WidgetExitEventHandler->OnExit(this, event);
+                m_WidgetMouseExitEventHandler->OnExit(this, event);
             }
         }
         m_bIsHover = false;
     }
 
-    if (event->type == SDL_MOUSEBUTTONUP)
+    switch (event->type)
     {
-        if (
-            m_MousePressedState == SDL_MOUSEBUTTONDOWN &&
-            m_bIsHover
-        )
+    case SDL_MOUSEBUTTONUP:
+    {
+        Uint8 buttonCode = GetButtonCode(event);
+        if (m_bIsHover)
         {
-            if (m_WidgetClickedEventHandler != nullptr)
+            if (m_MousePressedState[buttonCode] != SDL_MOUSEBUTTONUP)
             {
-                m_WidgetClickedEventHandler->OnWidgetClicked(this, event);
+                if (m_WidgetMouseButtonReleasedEventHandler != nullptr)
+                {
+                    m_WidgetMouseButtonReleasedEventHandler->OnMouseButtonReleased(this, event);
+                }
+            }
+            if (m_MousePressedState[buttonCode] == SDL_MOUSEBUTTONDOWN)
+            {
+                if (m_WidgetClickedEventHandler != nullptr)
+                {
+                    m_WidgetClickedEventHandler->OnWidgetClicked(this, event);
+                    m_bIsFocused = true;
+                }
             }
         }
-        m_MousePressedState = SDL_MOUSEBUTTONUP;
+        else
+        {
+            m_bIsFocused = false;
+        }
+        m_MousePressedState[buttonCode] = SDL_MOUSEBUTTONUP;
     }
-    else if (m_bIsHover &&
-        event->type == SDL_MOUSEBUTTONDOWN)
+    break;
+
+    case SDL_MOUSEBUTTONDOWN:
     {
-        m_MousePressedState = SDL_MOUSEBUTTONDOWN;
+        Uint8 buttonCode = GetButtonCode(event);
+        if (m_bIsHover)
+        {
+            if (m_MousePressedState[buttonCode] != SDL_MOUSEBUTTONDOWN)
+            {
+                if (m_WidgetMouseButtonPressedEventHandler != nullptr)
+                {
+                    m_WidgetMouseButtonPressedEventHandler->OnMouseButtonPressed(this, event);
+                }
+            }
+            m_MousePressedState[buttonCode] = SDL_MOUSEBUTTONDOWN;
+        }
+    }
+    break;
+
+    case SDL_KEYDOWN:
+    {
+        if (m_WidgetKeyPressedEventHandler != nullptr)
+        {
+            m_WidgetKeyPressedEventHandler->OnKeyPressed(this, event);
+        }
+    }
+    break;
+
+    case SDL_KEYUP:
+    {
+        if (m_WidgetKeyReleasedEventHandler != nullptr)
+        {
+            m_WidgetKeyReleasedEventHandler->OnKeyReleased(this, event);
+        }
+    }
+    break;
+
+    
+    default:
+        break;
+    }
+
+    if (event->type == SDL_KEYDOWN)
+    {
+
     }
 }
 
@@ -97,10 +185,11 @@ void Widget::Render()
     {
         throw NullWindowException();
     }
-    SDL_SetRenderDrawColor(m_Window->m_Renderer, m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
-    SDL_RenderDrawRect(m_Window->m_Renderer, &m_Position);
-    SDL_SetRenderDrawColor(m_Window->m_Renderer, m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
+    SDL_SetRenderDrawColor(m_Window->m_Renderer, m_BorderColor.r, m_BorderColor.g, m_BorderColor.b, m_BorderColor.a);
     SDL_RenderFillRect(m_Window->m_Renderer, &m_Position);
+    SDL_SetRenderDrawColor(m_Window->m_Renderer, m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
+    SDL_Rect insideRect = { .x = m_Position.x + m_PadX, .y = m_Position.y + m_PadY, .w = (m_Position.w - 2 * m_PadX), .h = (m_Position.h - 2 * m_PadY) };
+    SDL_RenderFillRect(m_Window->m_Renderer, &insideRect);
 }
 
 void Widget::Destroy()

@@ -1,9 +1,9 @@
 #pragma once
 #include "MFTK/Tk.h"
-#include "MFTK/Widget/WidgetEventHandler/IWidgetExitEventHandler.h"
+#include "MFTK/Widget/WidgetEventHandler/IWidgetMouseExitEventHandler.h"
 #include <iostream>
 
-class OnMouseExitEventHandler : public MFTK::IWidgetExitEventHandler
+class OnMouseExitEventHandler : public MFTK::IWidgetMouseExitEventHandler
 {
 public:
     OnMouseExitEventHandler() = default;
