@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/MFTK/include",
-                "${workspaceFolder}/MFTK/vendor/SDL2/include"
+                "${workspaceFolder}/MFTK/vendor/SDL2/include",
+                "${workspaceFolder}/MFTK/vendor/SDL2_ttf"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
