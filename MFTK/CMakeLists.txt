@@ -18,10 +18,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    SDL2-static
-    SDL2main
+    SDL2
+    SDL2_ttf
 )
-
-install (TARGETS ${PROJECT_NAME} DESTINATION lib)
+install (DIRECTORY include/ DESTINATION MFTK/include)
+install (TARGETS ${PROJECT_NAME} DESTINATION MFTK/lib)
 install (DIRECTORY vendor/SDL2/include DESTINATION vendor/SDL2)
-install (TARGETS SDL2-static SDL2main DESTINATION vendor/SDL2/lib)
+install (TARGETS SDL2 SDL2_ttf DESTINATION vendor/SDL2/lib)

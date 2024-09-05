@@ -1,8 +1,6 @@
 #include "MFTK/Tk.h"
 #include "MFTK/Widget/EntryWidget/EntryWidget.h"
 
-
-
 int main(int argc, char *argv[])
 {
     MFTK::Tk::Initialize(120);
@@ -15,7 +13,6 @@ int main(int argc, char *argv[])
 
     MFTK::Tk::AddWindow(mainWindow);
     MFTK::Tk::MainLoop();
-
 
     delete mainWindow;
     SDL_Quit();
