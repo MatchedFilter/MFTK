@@ -1,4 +1,4 @@
 #!/bin/bash
 ./build.sh
 
-cmake --install BuildDir
+cmake --install Out/BuildDir

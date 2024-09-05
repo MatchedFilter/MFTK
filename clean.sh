@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -rf BuildDir bin
+rm -rf Out

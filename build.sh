@@ -1,2 +1,2 @@
 #!/bin/bash
-ninja -C BuildDir
+ninja -C Out/BuildDir
