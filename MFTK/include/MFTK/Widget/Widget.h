@@ -87,6 +87,9 @@ namespace MFTK
         virtual void HandleEvents(const SDL_Event *event);
         virtual void Render();
 
+        SDL_Window *GetWindow() const;
+        SDL_Renderer *GetRenderer() const;
+
     protected:
         Window *m_Window;
         SDL_Rect m_Position;

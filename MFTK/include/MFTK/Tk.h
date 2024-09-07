@@ -8,7 +8,6 @@ namespace MFTK
     public:
         Tk() = delete;
         static void Initialize(Uint32 fps = 0);
-        static void ChangeCursor(SDL_SystemCursor sdlCursor);
         static void AddWindow(Window *window);
         static void DestroyApplication();
         static void MainLoop();

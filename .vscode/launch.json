@@ -5,15 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "MFTKTest Launch",
+            "name": "Simple Window Attach",
             "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/Debug/MFTKTest",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin/Debug",
-            "environment": [],
-            "externalConsole": false,
+            "request": "attach",
+            "program": "${workspaceFolder}/MFTK_Examples/SimpleWindow/Out/Debug/bin/SimpleMFTKWindow",
             "MIMode": "gdb",
             "setupCommands": [
                 {

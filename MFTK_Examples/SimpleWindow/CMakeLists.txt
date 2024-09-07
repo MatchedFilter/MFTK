@@ -24,7 +24,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_directories(${PROJECT_NAME} PUBLIC vendor/MFTK/lib)
 target_link_directories(${PROJECT_NAME} PUBLIC vendor/SDL2/lib)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-2.0d SDL2_ttf-2.0d MFTK)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    SDL2-2.0d
+    SDL2_ttf-2.0d
+    MFTK
+)
+
+
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 install(DIRECTORY vendor/SDL2/lib/ DESTINATION bin)
+install(DIRECTORY vendor/MFTK/lib/ DESTINATION bin)
+install(DIRECTORY vendor/MFTK/resources DESTINATION bin/)

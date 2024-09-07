@@ -192,6 +192,16 @@ void Widget::Render()
     SDL_RenderFillRect(m_Window->m_Renderer, &insideRect);
 }
 
+SDL_Window *Widget::GetWindow() const
+{
+    return m_Window->m_Window;
+}
+
+SDL_Renderer *Widget::GetRenderer() const
+{
+    return m_Window->m_Renderer;
+}
+
 void Widget::Destroy()
 {
     if (m_Window !=  nullptr)

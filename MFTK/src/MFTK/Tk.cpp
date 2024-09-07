@@ -1,5 +1,6 @@
 #include "MFTK/Tk.h"
 #include "MFTK/Exceptions/UnableToCreateWindowException.h"
+#include "MFTK/ResourceManager/ResourceManager.h"
 #include <map>
 #include <atomic>
 
@@ -7,7 +8,6 @@
 using namespace MFTK;
 
 Uint32 s_WidgetIDCounter = 0;
-SDL_Cursor *s_SdlCursors[SDL_NUM_SYSTEM_CURSORS] = { 0 };
 Uint32 Tk::s_Fps = 0;
 std::map<Uint32, Window*> s_WindowMap;
 static std::atomic_bool s_ApplicationRunning = true;
@@ -39,23 +39,8 @@ void Tk::Initialize(Uint32 fps)
 {
     SDL_Init(SDL_INIT_VIDEO);
     s_Fps = fps;
-    s_SdlCursors[SDL_SYSTEM_CURSOR_ARROW]       = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_IBEAM]       = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_WAIT]        = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_CROSSHAIR]   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_WAITARROW]   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_SIZENWSE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_SIZENESW]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_SIZEWE]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_SIZENS]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_SIZEALL]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_NO]          = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
-    s_SdlCursors[SDL_SYSTEM_CURSOR_HAND]        = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-}
+    ResourceManager::Initialize();
 
-void Tk::ChangeCursor(SDL_SystemCursor sdlCursor)
-{
-    SDL_SetCursor(s_SdlCursors[sdlCursor]);
 }
 
 void Tk::AddWindow(Window *window)

@@ -46,6 +46,7 @@ namespace MFTK
 
         friend class Tk;
         friend class Widget;
+        friend class EntryWidget;
 
     private:
         void Destroy();

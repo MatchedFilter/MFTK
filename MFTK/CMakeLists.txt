@@ -5,10 +5,11 @@ file(GLOB_RECURSE MFTK_HDRS include/*.h)
 file(GLOB_RECURSE MFTK_SRC_HDRS src/*.h)
 file(GLOB_RECURSE MFTK_SRCS src/*.cpp)
 
+
 add_subdirectory(vendor/SDL2)
 add_subdirectory(vendor/SDL2_ttf)
 
-add_library(${PROJECT_NAME} STATIC
+add_library(${PROJECT_NAME} SHARED
                 ${MFTK_HDRS}
                 ${MFTK_SRC_HDRS}
                 ${MFTK_SRCS}
@@ -24,5 +25,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 install (DIRECTORY include/ DESTINATION MFTK/include)
 install (TARGETS ${PROJECT_NAME} DESTINATION MFTK/lib)
 install (DIRECTORY vendor/SDL2/include DESTINATION vendor/SDL2)
+install (FILES vendor/SDL2_ttf/SDL_ttf.h DESTINATION vendor/SDL2/include)
 install (TARGETS SDL2 SDL2_ttf DESTINATION vendor/SDL2/lib)
 install (DIRECTORY resources DESTINATION MFTK)
