@@ -7,4 +7,3 @@ void EntryWidgetMouseEnterEventHandler::OnEnter(Widget *widget, const SDL_Event 
 {
     ResourceManager::ChangeCursor(SDL_SYSTEM_CURSOR_IBEAM);
 }
-

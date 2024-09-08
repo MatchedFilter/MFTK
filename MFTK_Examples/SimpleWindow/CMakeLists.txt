@@ -30,8 +30,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     MFTK
 )
 
-
-
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 install(DIRECTORY vendor/SDL2/lib/ DESTINATION bin)
 install(DIRECTORY vendor/MFTK/lib/ DESTINATION bin)

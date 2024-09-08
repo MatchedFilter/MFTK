@@ -53,10 +53,13 @@ Widget::Widget(Window *window, Sint32 w, Sint32 h) :
     m_WidgetHoverEventHandler { nullptr },
     m_WidgetMouseEnterEventHandler { nullptr },
     m_WidgetMouseExitEventHandler { nullptr },
+    m_WidgetTextInputEventHandler { nullptr },
     m_WidgetKeyPressedEventHandler { nullptr },
     m_WidgetKeyReleasedEventHandler { nullptr },
     m_WidgetMouseButtonPressedEventHandler { nullptr },
     m_WidgetMouseButtonReleasedEventHandler { nullptr },
+    m_WidgetOnFocusOnEventHandler { nullptr },
+    m_WidgetOnFocusOutEventHandler { nullptr },
     m_BgColor { .r = 40, .g = 40, .b = 40, .a = 255 },
     m_BorderColor { .r = 160, .g = 160, .b = 180, .a = 255 },
     m_PadX { 1 },
@@ -121,13 +124,8 @@ void Widget::HandleEvents(const SDL_Event *event)
                 if (m_WidgetClickedEventHandler != nullptr)
                 {
                     m_WidgetClickedEventHandler->OnWidgetClicked(this, event);
-                    m_bIsFocused = true;
                 }
             }
-        }
-        else
-        {
-            m_bIsFocused = false;
         }
         m_MousePressedState[buttonCode] = SDL_MOUSEBUTTONUP;
     }
@@ -138,6 +136,11 @@ void Widget::HandleEvents(const SDL_Event *event)
         Uint8 buttonCode = GetButtonCode(event);
         if (m_bIsHover)
         {
+            m_bIsFocused = true;
+            if (m_WidgetOnFocusOnEventHandler != nullptr)
+            {
+                m_WidgetOnFocusOnEventHandler->OnFocusOn(this, event);
+            }
             if (m_MousePressedState[buttonCode] != SDL_MOUSEBUTTONDOWN)
             {
                 if (m_WidgetMouseButtonPressedEventHandler != nullptr)
@@ -146,6 +149,14 @@ void Widget::HandleEvents(const SDL_Event *event)
                 }
             }
             m_MousePressedState[buttonCode] = SDL_MOUSEBUTTONDOWN;
+        }
+        else
+        {
+            if (m_WidgetOnFocusOutEventHandler != nullptr)
+            {
+                m_WidgetOnFocusOutEventHandler->OnFocusOut(this, event);
+            }
+            m_bIsFocused = false;
         }
     }
     break;
@@ -168,6 +179,15 @@ void Widget::HandleEvents(const SDL_Event *event)
     }
     break;
 
+    case SDL_TEXTINPUT:
+    {
+        if (m_WidgetTextInputEventHandler != nullptr)
+        {
+            m_WidgetTextInputEventHandler->OnTextInput(this, event);
+        }
+    }
+    break;
+
     
     default:
         break;
@@ -179,18 +199,33 @@ void Widget::HandleEvents(const SDL_Event *event)
     }
 }
 
+
 void Widget::Render()
+{
+    RenderBegin();
+    RenderWidget();
+    RenderFinish();
+}
+
+void Widget::RenderBegin()
+{
+    if (m_Window == nullptr)
+    {
+        throw NullWindowException();
+    }
+    SDL_RenderFillRect(m_Window->m_Renderer, &m_Position);
+}
+
+void Widget::RenderFinish()
 {
     if (m_Window == nullptr)
     {
         throw NullWindowException();
     }
     SDL_SetRenderDrawColor(m_Window->m_Renderer, m_BorderColor.r, m_BorderColor.g, m_BorderColor.b, m_BorderColor.a);
-    SDL_RenderFillRect(m_Window->m_Renderer, &m_Position);
-    SDL_SetRenderDrawColor(m_Window->m_Renderer, m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
-    SDL_Rect insideRect = { .x = m_Position.x + m_PadX, .y = m_Position.y + m_PadY, .w = (m_Position.w - 2 * m_PadX), .h = (m_Position.h - 2 * m_PadY) };
-    SDL_RenderFillRect(m_Window->m_Renderer, &insideRect);
+    SDL_RenderDrawRect(m_Window->m_Renderer, &m_Position);
 }
+
 
 SDL_Window *Widget::GetWindow() const
 {

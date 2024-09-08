@@ -4,10 +4,13 @@
 #include "WidgetEventHandler/IWidgetHoverEventHandler.h"
 #include "WidgetEventHandler/IWidgetMouseEnterEventHandler.h"
 #include "WidgetEventHandler/IWidgetMouseExitEventHandler.h"
+#include "WidgetEventHandler/IWidgetTextInputEventHandler.h"
 #include "WidgetEventHandler/IWidgetKeyPressedEventHandler.h"
 #include "WidgetEventHandler/IWidgetKeyReleasedEventHandler.h"
 #include "WidgetEventHandler/IWidgetMouseButtonPressedEventHandler.h"
 #include "WidgetEventHandler/IWidgetMouseButtonReleasedEventHandler.h"
+#include "WidgetEventHandler/IWidgetOnFocusOnEventHandler.h"
+#include "WidgetEventHandler/IWidgetOnFocusOutEventHandler.h"
 #include "MFTK/Common/GridData.h"
 
 namespace MFTK
@@ -41,6 +44,11 @@ namespace MFTK
             m_WidgetMouseExitEventHandler = widgetMouseExitEventHandler;
         }
 
+        inline virtual void SetWidgetTextInputEventHandler(IWidgetTextInputEventHandler *widgetTextInputEventHandler)
+        {
+            m_WidgetTextInputEventHandler = widgetTextInputEventHandler;
+        }
+
         inline virtual void SetWidgetKeyPressedEventHandler(IWidgetKeyPressedEventHandler *widgetKeyPressedEventHandler)
         {
             m_WidgetKeyPressedEventHandler = widgetKeyPressedEventHandler;
@@ -61,6 +69,17 @@ namespace MFTK
             m_WidgetMouseButtonReleasedEventHandler = widgetMouseButtonReleasedEventHandler;
         }
 
+        inline virtual void SetWidgetOnFocusOnEventHandler(IWidgetOnFocusOnEventHandler *widgetOnFocusOnEventHandler)
+        {
+            m_WidgetOnFocusOnEventHandler = widgetOnFocusOnEventHandler;
+        }
+
+
+        inline virtual void SetWidgetOnFocusOutEventHandler(IWidgetOnFocusOutEventHandler *widgetOnFocusOutEventHandler)
+        {
+            m_WidgetOnFocusOutEventHandler = widgetOnFocusOutEventHandler;
+        }
+
         inline void SetBgColor(SDL_Color bgColor) {
             m_BgColor.r = bgColor.r;
             m_BgColor.g = bgColor.g;
@@ -78,17 +97,22 @@ namespace MFTK
         inline void SetPadX(int padx) { m_PadX = padx; }
         inline void SetPadY(int pady) { m_PadY = pady; }
 
+
+        // Getters
         Uint32 GetWidgetID() const;
         bool IsFocused() const { return m_bIsFocused; }
         int GetPadX() const { return m_PadX; }
         int GetPadY() const { return m_PadY; }
+        SDL_Rect GetWidgetPosition() const { return m_Position; }
 
     protected:
         virtual void HandleEvents(const SDL_Event *event);
-        virtual void Render();
+        virtual void RenderWidget() { };
+
 
         SDL_Window *GetWindow() const;
         SDL_Renderer *GetRenderer() const;
+
 
     protected:
         Window *m_Window;
@@ -101,10 +125,13 @@ namespace MFTK
         IWidgetHoverEventHandler *m_WidgetHoverEventHandler;
         IWidgetMouseEnterEventHandler *m_WidgetMouseEnterEventHandler;
         IWidgetMouseExitEventHandler *m_WidgetMouseExitEventHandler;
+        IWidgetTextInputEventHandler *m_WidgetTextInputEventHandler;
         IWidgetKeyPressedEventHandler *m_WidgetKeyPressedEventHandler;
         IWidgetKeyReleasedEventHandler *m_WidgetKeyReleasedEventHandler;
         IWidgetMouseButtonPressedEventHandler *m_WidgetMouseButtonPressedEventHandler;
         IWidgetMouseButtonReleasedEventHandler *m_WidgetMouseButtonReleasedEventHandler;
+        IWidgetOnFocusOnEventHandler *m_WidgetOnFocusOnEventHandler;
+        IWidgetOnFocusOutEventHandler *m_WidgetOnFocusOutEventHandler;
         SDL_Color m_BgColor;
         SDL_Color m_BorderColor;
         int m_PadX;
@@ -112,6 +139,9 @@ namespace MFTK
 
     private:
 
+        void Render();
+        void RenderBegin();
+        void RenderFinish();
         void SetWidgetWindow(Window* window);
         Uint32 m_ID;
         friend class Window;
