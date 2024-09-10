@@ -22,10 +22,11 @@ EntryWidget::EntryWidget(Window *window, Sint32 w, Sint32 h, FontData fontData) 
     m_bIsTextInputEventUpdated { false },
     m_Font { nullptr },
     m_FgColor { .r = 200, .g = 200, .b = 200, .a = 255 },
-    m_CaretIndex { 0 },
-    m_CaretTextIndex { 0 },
+    m_UtfTextIndex { 0 },
+    m_TextIndex { 0 },
     m_CaretColor { .r = 220, .g = 220, .b = 220, .a = 255},
-    m_CaretBlinkTimer { Timer(800, true, &m_CaretBlinkTimerTimeoutHandler)}
+    m_CaretBlinkTimer { Timer(800, true, &m_CaretBlinkTimerTimeoutHandler)},
+    m_DisplayStartIndex{ 0 }
 {
     m_WidgetMouseButtonPressedEventHandler = new EntryWidgetMouseButtonPressedEventHandler();
     m_WidgetMouseEnterEventHandler = new EntryWidgetMouseEnterEventHandler();
@@ -117,21 +118,25 @@ inline bool IsNotAsciiTextChar(char key)
 
 void EntryWidget::OnBackspace()
 {
-    if (m_CaretTextIndex > 0)
+    if (m_TextIndex > 0)
     {
-        if (m_CaretTextIndex > 1 &&
-            IsNotAsciiTextChar(m_Text.at(m_CaretTextIndex - 2)) &&
-            IsNotAsciiTextChar(m_Text.at(m_CaretTextIndex - 1)))
+        if (m_TextIndex > 1 &&
+            IsNotAsciiTextChar(m_Text.at(m_TextIndex - 2)) &&
+            IsNotAsciiTextChar(m_Text.at(m_TextIndex - 1)))
         {
-            m_Text.erase(m_CaretTextIndex - 2, 2);
-            m_CaretTextIndex -= 2;
-            m_CaretIndex--;
+            m_Text.erase(m_TextIndex - 2, 2);
+            m_TextIndex -= 2;
+            m_UtfTextIndex--;
         }
         else
         {
-            m_Text.erase(m_CaretTextIndex - 1, 1);
-            m_CaretIndex--;
-            m_CaretTextIndex--;
+            m_Text.erase(m_TextIndex - 1, 1);
+            m_UtfTextIndex--;
+            m_TextIndex--;
+        }
+        if (m_UtfTextIndex < m_DisplayStartIndex)
+        {
+            m_DisplayStartIndex = m_UtfTextIndex;
         }
     }
 }
@@ -140,9 +145,14 @@ void EntryWidget::OnTextInsert(const char *text)
 {
     std::string_view textView = m_Text;
 
-    m_Text.insert(m_CaretTextIndex, text);
-    m_CaretIndex += SDL_utf8strlen(text);
-    m_CaretTextIndex += strlen(text);
+    m_Text.insert(m_TextIndex, text);
+    m_UtfTextIndex += SDL_utf8strlen(text);
+    m_TextIndex += strlen(text);
+    int displaySize = GetDisplaySize();
+    if (m_UtfTextIndex > displaySize)
+    {
+        m_DisplayStartIndex = m_UtfTextIndex - displaySize;
+    }
     m_CaretBlinkTimerTimeoutHandler.TurnOn();
     m_CaretBlinkTimer.Start();
 }
@@ -174,8 +184,8 @@ void EntryWidget::DeleteText(Sint32 index, Uint32 size)
 
 void EntryWidget::ClearText()
 {
-    m_CaretIndex = 0;
-    m_CaretTextIndex = 0;
+    m_UtfTextIndex = 0;
+    m_TextIndex = 0;
     m_Text.clear();
 }
 
@@ -186,6 +196,11 @@ int EntryWidget::GetPixelPerChar() const
     return textW;
 }
 
+int EntryWidget::GetDisplaySize() const
+{
+    constexpr const int32_t CLEARANCE_PADX_PIXEL = 2;
+    return static_cast<int>(static_cast<double>(m_Position.w - 2 * m_PadX + CLEARANCE_PADX_PIXEL) / GetPixelPerChar());
+}
 
 void EntryWidget::Destroy()
 {
@@ -254,45 +269,66 @@ void EntryWidget::Destroy()
 
 void EntryWidget::SetCaretIndex(Sint32 caretIndex)
 {
-    const size_t textUtfSize = SDL_utf8strlen(m_Text.c_str());
-    if (m_Text.size() > 0 && caretIndex <= textUtfSize)
+    m_TextIndex = GetTextIndexFromUtf8TextIndex(caretIndex);
+    m_UtfTextIndex = caretIndex;
+    int displaySize = GetDisplaySize();
+    if (m_UtfTextIndex > m_DisplayStartIndex + displaySize)
     {
-        size_t leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, caretIndex).c_str());
-        int currentIndex = caretIndex;
-        if (currentIndex + 1 < m_Text.size() && SDL_utf8strlen(m_Text.substr(0, currentIndex + 1).c_str()) == caretIndex)
-        {
-            currentIndex++;
-            leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, currentIndex).c_str());
-        }
-        for (size_t i = currentIndex; i < m_Text.size() && leftSideUtfLength < caretIndex; i++)
-        {
-            currentIndex++;
-            leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, currentIndex).c_str());
-            if (leftSideUtfLength == caretIndex)
-            {
-                if (currentIndex + 1 < m_Text.size() && SDL_utf8strlen(m_Text.substr(0, currentIndex + 1).c_str()) == caretIndex)
-                {
-                    currentIndex++;
-                }
-                break;
-            }
-        }
-        m_CaretTextIndex = currentIndex;
-        m_CaretIndex = caretIndex;
-
-        if (m_CaretTextIndex == m_Text.size())
-        {
-            m_CaretIndex = textUtfSize;
-        }
+        m_DisplayStartIndex = m_UtfTextIndex - displaySize;
+    }
+    else if (m_UtfTextIndex < m_DisplayStartIndex)
+    {
+        m_DisplayStartIndex = m_UtfTextIndex;
     }
 }
+
+Sint32 EntryWidget::GetTextIndexFromUtf8TextIndex(Sint32 utf8TextIndex) const
+{
+    Sint32 textIndex = 0;
+    const size_t textUtfSize = SDL_utf8strlen(m_Text.c_str());
+    if (m_Text.size() > 0 && utf8TextIndex <= textUtfSize)
+    {
+        size_t leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, utf8TextIndex).c_str());
+        int currentIndex = utf8TextIndex;
+        for (size_t i = currentIndex; i <= m_Text.size() && leftSideUtfLength <= utf8TextIndex; i++)
+        {
+            currentIndex++;
+            if (currentIndex > m_Text.size())
+            {
+                break;
+            }
+            leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, currentIndex).c_str());
+        }
+        textIndex = currentIndex - 1;
+    }
+    else if (m_Text.size() == 0)
+    {
+        textIndex = 0;
+    }
+    else
+    {
+        textIndex = textUtfSize;
+    }
+    return textIndex;
+}
+
 
 void EntryWidget::RenderWidget()
 {
     m_CaretBlinkTimer.Run();
-    std::string_view stringToDisplay = m_Text;
-    std::string tempString;
-    int displaySize = SDL_utf8strlen(stringToDisplay.data());
+    std::string partialString;
+    int utfTextSize = SDL_utf8strlen(m_Text.c_str());
+    int displaySize = GetDisplaySize();
+    Sint32 displayTextIndex = GetTextIndexFromUtf8TextIndex(m_DisplayStartIndex);
+    Sint32 displayLastTextIndex = GetTextIndexFromUtf8TextIndex(utfTextSize);
+    if (m_DisplayStartIndex > 0 || utfTextSize > displaySize)
+    {
+        displayLastTextIndex = GetTextIndexFromUtf8TextIndex(m_DisplayStartIndex + displaySize - 1);
+    }
+    std::cout << "S: " << displayTextIndex << ", L: " << displayLastTextIndex << ", dS: " << m_DisplayStartIndex << ", size: " << displaySize << "\n";
+    partialString = m_Text.substr(displayTextIndex, displayLastTextIndex - displayTextIndex + 1);
+    std::string_view stringToDisplay = partialString;
+
     int textW, textH;
     TTF_SizeUTF8(m_Font, stringToDisplay.data(), &textW, &textH);
     if (m_Position.h < textH + 2 * m_PadY)
@@ -301,14 +337,6 @@ void EntryWidget::RenderWidget()
     }
     
     int textHOffset = (m_Position.h - textH) / 2;
-    if (textW > m_Position.w && SDL_utf8strlen(stringToDisplay.data()) > 0)
-    {
-        constexpr const int32_t CLEARANCE_PADX_PIXEL = 2;
-        displaySize = static_cast<int>(static_cast<double>(m_Position.w - 2 * m_PadX + CLEARANCE_PADX_PIXEL) / GetPixelPerChar());
-        tempString = stringToDisplay.substr(0, displaySize);
-        stringToDisplay = tempString;
-        TTF_SizeUTF8(m_Font, stringToDisplay.data(), &textW, &textH);
-    }
     SDL_Rect textRect = {.x = m_Position.x + m_PadX + 1, .y = m_Position.y + textHOffset, .w = textW, .h = textH };
 
     if (m_CaretBlinkTimerTimeoutHandler.IsTurnedOn())
@@ -316,7 +344,8 @@ void EntryWidget::RenderWidget()
         int caretXPos =  m_Position.x + m_PadX + 1;
         if (m_Text.size() > 0)
         {
-            caretXPos += static_cast<int>(m_CaretIndex * GetPixelPerChar());
+            int caretIndex = m_UtfTextIndex - m_DisplayStartIndex;
+            caretXPos += static_cast<int>(caretIndex * GetPixelPerChar());
         }
         SDL_Rect caretRect = {.x = caretXPos,
             .y = m_Position.y + textHOffset,
