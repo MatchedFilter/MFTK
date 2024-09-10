@@ -262,7 +262,7 @@ void EntryWidget::SetCaretIndex(Sint32 caretIndex)
         if (currentIndex + 1 < m_Text.size() && SDL_utf8strlen(m_Text.substr(0, currentIndex + 1).c_str()) == caretIndex)
         {
             currentIndex++;
-            leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, caretIndex).c_str());
+            leftSideUtfLength = SDL_utf8strlen(m_Text.substr(0, currentIndex).c_str());
         }
         for (size_t i = currentIndex; i < m_Text.size() && leftSideUtfLength < caretIndex; i++)
         {
