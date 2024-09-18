@@ -4,6 +4,7 @@
 #include "MFTK/ResourceManager/FontData.h"
 #include "TimerHandler/CaretBlinkTimerTimeoutHandler.h"
 #include "MFTK/Common/Time/Timer.h"
+#include <string_view>
 #include <string>
 
 namespace MFTK
@@ -23,16 +24,17 @@ namespace MFTK
         virtual void SetWidgetOnFocusOnEventHandler(IWidgetOnFocusOnEventHandler *widgetOnFocusOnEventHandler) override;
         virtual void SetWidgetOnFocusOutEventHandler(IWidgetOnFocusOutEventHandler *widgetOnFocusOutEventHandler) override;
 
-        void InsertText(Sint32 index, const char *text);
+        void InsertText(Sint32 index, std::u32string_view text);
         void DeleteText(Sint32 index, Uint32 size);
         void ClearText();
         int GetPixelPerChar() const;
         int GetDisplaySize() const;
 
         // Getters
-        const char *GetText() const { return m_Text.c_str(); }
+        std::u32string_view GetUtf32Text() const { return m_Utf32String; }
+        std::size_t GetUtf32TextSize() const { return m_Utf32String.size(); };
 
-        inline Sint32 GetCaretIndex() const { return m_UtfTextIndex; }
+        inline Sint32 GetCaretIndex() const { return m_Utf32TextIndex; }
         inline Sint32 GetDisplayStartIndex() const { return m_DisplayStartIndex; }
 
         // Setters
@@ -53,10 +55,9 @@ namespace MFTK
         void SetCaretIndex(Sint32 caretIndex);
 
     protected:
-        Sint32 GetTextIndexFromUtf8TextIndex(Sint32 textIndex) const;
         virtual void RenderWidget() override;
         virtual void OnBackspace();
-        virtual void OnTextInsert(const char *text);
+        virtual void OnTextInsert(std::u32string_view text);
 
 
     private:
@@ -68,11 +69,10 @@ namespace MFTK
         bool m_bIsFocusOnEventUpdated;
         bool m_bIsFocusOutEventUpdated;
 
-        std::string m_Text;
+        std::u32string m_Utf32String;
         TTF_Font *m_Font;
         SDL_Color m_FgColor;
-        Sint32 m_UtfTextIndex;
-        Sint32 m_TextIndex;
+        Sint32 m_Utf32TextIndex;
         SDL_Color m_CaretColor;
         CaretBlinkTimerTimeoutHandler m_CaretBlinkTimerTimeoutHandler;
         Timer m_CaretBlinkTimer;

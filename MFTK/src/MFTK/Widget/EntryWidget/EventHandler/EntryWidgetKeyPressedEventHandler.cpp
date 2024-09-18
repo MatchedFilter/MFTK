@@ -18,7 +18,7 @@ void EntryWidgetKeyPressedEventHandler::OnKeyPressed(Widget *widget, const SDL_E
 
         case SDLK_RIGHT:
         {
-            if (eWidget->GetCaretIndex() < SDL_utf8strlen(eWidget->m_Text.c_str()))
+            if (eWidget->GetCaretIndex() < eWidget->GetUtf32TextSize())
             {
                 eWidget->m_CaretBlinkTimer.Start();
                 eWidget->m_CaretBlinkTimerTimeoutHandler.TurnOn();

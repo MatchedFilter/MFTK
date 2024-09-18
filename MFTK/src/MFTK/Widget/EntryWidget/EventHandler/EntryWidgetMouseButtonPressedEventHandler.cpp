@@ -7,7 +7,7 @@ void EntryWidgetMouseButtonPressedEventHandler::OnMouseButtonPressed(Widget *wid
 {
     EntryWidget *eWidget = static_cast<EntryWidget*>(widget);
     Sint32 caretIndex = eWidget->GetCaretIndex();
-    size_t textLength = SDL_utf8strlen(eWidget->GetText());
+    size_t textLength = eWidget->GetUtf32TextSize();
     if (textLength > 0)
     {
         SDL_Rect position = widget->GetWidgetPosition();
