@@ -26,7 +26,8 @@ EntryWidget::EntryWidget(Window *window, Sint32 w, Sint32 h, FontData fontData) 
     m_Utf32TextIndex { 0 },
     m_CaretColor { .r = 220, .g = 220, .b = 220, .a = 255},
     m_CaretBlinkTimer { Timer(800, true, &m_CaretBlinkTimerTimeoutHandler)},
-    m_DisplayStartIndex{ 0 }
+    m_DisplayStartIndex{ 0 },
+    m_SelectedRange { 0, 0 }
 {
     m_WidgetMouseButtonPressedEventHandler = new EntryWidgetMouseButtonPressedEventHandler();
     m_WidgetMouseEnterEventHandler = new EntryWidgetMouseEnterEventHandler();

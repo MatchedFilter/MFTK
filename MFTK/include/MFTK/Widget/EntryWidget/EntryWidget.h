@@ -77,6 +77,7 @@ namespace MFTK
         CaretBlinkTimerTimeoutHandler m_CaretBlinkTimerTimeoutHandler;
         Timer m_CaretBlinkTimer;
         Sint32 m_DisplayStartIndex;
+        Sint32 m_SelectedRange[2];
 
         friend class EntryWidgetOnFocusOnEventHandler;
         friend class EntryWidgetOnFocusOutEventHandler;
